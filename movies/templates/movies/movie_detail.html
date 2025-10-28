@@ -1,0 +1,17 @@
+{% extends "movies/base.html" %}
+{% block title %}{{ movie.MovieTitle }}{% endblock %}
+{% block content %}
+  <div class="card">
+    <div class="card-body">
+      <h3 class="card-title">{{ movie.MovieTitle }} <small class="text-muted">({{ movie.ReleaseYear }})</small></h3>
+      <p class="mb-1"><strong>MovieID:</strong> {{ movie.MovieID }}</p>
+      <p class="mb-1"><strong>Director:</strong> {{ movie.DirectorName }}</p>
+      <p class="mb-1"><strong>Actors:</strong> {{ movie.Actor1Name }}{% if movie.Actor2Name %}, {{ movie.Actor2Name }}{% endif %}</p>
+      <p class="mb-3"><strong>Genre:</strong> {{ movie.get_MovieGenre_display }}</p>
+
+      <a class="btn btn-primary" href="{% url 'movies:movie_update' movie.MovieID %}">Edit</a>
+      <a class="btn btn-outline-secondary" href="{% url 'movies:movie_list' %}">Back</a>
+      <a class="btn btn-danger float-end" href="{% url 'movies:movie_delete' movie.MovieID %}">Delete</a>
+    </div>
+  </div>
+{% endblock %}

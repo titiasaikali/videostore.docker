@@ -1,0 +1,13 @@
+{% extends "movies/base.html" %}
+{% block title %}Delete {{ movie.MovieTitle }}{% endblock %}
+{% block content %}
+  <div class="alert alert-warning">
+    <h4>Delete “{{ movie.MovieTitle }}”?</h4>
+    <p>This action cannot be undone.</p>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn btn-danger" type="submit">Yes, delete</button>
+      <a class="btn btn-outline-secondary" href="{% url 'movies:movie_detail' movie.MovieID %}">No, go back</a>
+    </form>
+  </div>
+{% endblock %}

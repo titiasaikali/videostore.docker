@@ -1,0 +1,28 @@
+{% extends "movies/base.html" %}
+{% block title %}Movies{% endblock %}
+{% block content %}
+  <form class="row g-2 mb-3" method="get">
+    <div class="col-auto">
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Search title...">
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-outline-primary" type="submit">Search</button>
+    </div>
+  </form>
+
+  {% if movies %}
+    <div class="list-group">
+      {% for m in movies %}
+        <a class="list-group-item list-group-item-action" href="{% url 'movies:movie_detail' m.MovieID %}">
+          <div class="d-flex justify-content-between">
+            <strong>{{ m.MovieTitle }}</strong>
+            <small>{{ m.ReleaseYear }}</small>
+          </div>
+          <div class="text-muted small">{{ m.DirectorName }} • {{ m.get_MovieGenre_display }}</div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No movies yet.</p>
+  {% endif %}
+{% endblock %}
