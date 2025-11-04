@@ -2,14 +2,13 @@ pipeline {
   agent any
 
   environment {
-    // Full path to your minikube.exe
+    // use the exact binaries / profiles you use in your terminal
     MINIKUBE         = 'C:\\Users\\titia\\minikube.exe'
-    // Tell Jenkins to use YOUR Minikube/Kube config locations
     MINIKUBE_HOME    = 'C:\\Users\\titia\\.minikube'
     KUBECONFIG       = 'C:\\Users\\titia\\.kube\\config'
-    MINIKUBE_PROFILE = 'minikube'  // change if: minikube profile list shows a different name
+    MINIKUBE_PROFILE = 'minikube'
 
-    // Keep kubectl from being proxied to Jenkins
+    // keep kubectl from being proxied back to Jenkins
     HTTP_PROXY  = ''
     HTTPS_PROXY = ''
     http_proxy  = ''
@@ -20,9 +19,7 @@ pipeline {
     DOCKER_BUILDKIT = '1'
   }
 
-  triggers {
-    pollSCM('H/2 * * * *')
-  }
+  triggers { pollSCM('H/2 * * * *') }
 
   stages {
     stage('Checkout') {
@@ -35,7 +32,6 @@ pipeline {
       steps {
         bat """
         echo Using MINIKUBE_HOME=%MINIKUBE_HOME%
-        "%MINIKUBE%" profile list
         "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" status || (echo Minikube not running & exit /b 1)
         """
       }
