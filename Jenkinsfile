@@ -2,14 +2,14 @@ pipeline {
   agent any
 
   environment {
-    // adjust if minikube.exe is elsewhere
-    MINIKUBE          = 'C:\\Users\\titia\\minikube.exe'
-    // your user’s minikube + kubeconfig paths
-    MINIKUBE_HOME     = 'C:\\Users\\titia\\.minikube'
-    KUBECONFIG        = 'C:\\Users\\titia\\.kube\\config'
-    MINIKUBE_PROFILE  = 'minikube'   // change if your profile has a different name
+    // Full path to your minikube.exe
+    MINIKUBE         = 'C:\\Users\\titia\\minikube.exe'
+    // Tell Jenkins to use YOUR Minikube/Kube config locations
+    MINIKUBE_HOME    = 'C:\\Users\\titia\\.minikube'
+    KUBECONFIG       = 'C:\\Users\\titia\\.kube\\config'
+    MINIKUBE_PROFILE = 'minikube'  // change if: minikube profile list shows a different name
 
-    // keep kubectl from being proxied to Jenkins
+    // Keep kubectl from being proxied to Jenkins
     HTTP_PROXY  = ''
     HTTPS_PROXY = ''
     http_proxy  = ''
@@ -21,7 +21,6 @@ pipeline {
   }
 
   triggers {
-    // Poll GitHub every 2 minutes
     pollSCM('H/2 * * * *')
   }
 
@@ -35,6 +34,8 @@ pipeline {
     stage('Verify Minikube (must already be running)') {
       steps {
         bat """
+        echo Using MINIKUBE_HOME=%MINIKUBE_HOME%
+        "%MINIKUBE%" profile list
         "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" status || (echo Minikube not running & exit /b 1)
         """
       }
@@ -43,7 +44,6 @@ pipeline {
     stage('Build image (Docker Desktop)') {
       steps {
         bat """
-        docker version
         docker build -t mydjangoapp:latest .
         docker images | find "mydjangoapp"
         """
