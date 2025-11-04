@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: movie-deployment
+  name: django-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: movie-app
+      app: django-app
   template:
     metadata:
       labels:
-        app: movie-app
+        app: django-app
     spec:
       containers:
-        - name: movie-container
-          image: movieapp:latest
+        - name: django-container
+          image: mydjangoapp:latest
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
