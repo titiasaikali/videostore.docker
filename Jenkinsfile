@@ -1,27 +1,41 @@
 pipeline {
   agent any
-  environment {
-    IMAGE = "movies-app:latest"
-    CONTAINER = "movies-app"
-    PORT = "8000"
+
+  triggers {
+    // Poll GitHub every 2 minutes
+    pollSCM('H/2 * * * *')
   }
+
   stages {
     stage('Checkout') {
       steps {
-        cleanWs()
-        git branch: 'main', url: 'https://github.com/titiasaikali/videostore.docker.git'
+        git branch: 'main', url: 'https://github.com/titiasaikali/videostore.docker'
       }
     }
-    stage('Build Docker Image') {
-      steps { sh 'docker build -t $IMAGE .' }
+
+    stage('Build in Minikube Docker') {
+      steps {
+        bat '''
+        REM === Switch Docker to Minikube Docker ===
+        call minikube docker-env --shell=cmd > docker_env.bat
+        call docker_env.bat
+
+        REM === Build Django image inside Minikube Docker ===
+        docker build -t mydjangoapp:latest .
+        '''
+      }
     }
-    stage('Stop old container') {
-      steps { sh 'docker rm -f $CONTAINER || true' }
-    }
-    stage('Run new container') {
-      steps { sh 'docker run -d --name $CONTAINER -p $PORT:$PORT $IMAGE' }
+
+    stage('Deploy to Minikube') {
+      steps {
+        bat '''
+        REM === Apply the updated deployment manifest ===
+        kubectl apply -f deployment.yaml
+
+        REM === Ensure the rollout completes ===
+        kubectl rollout status deployment/django-deployment
+        '''
+      }
     }
   }
-  post { success { echo "Deployed at http://localhost:${PORT}" } }
 }
-
