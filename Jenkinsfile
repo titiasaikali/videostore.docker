@@ -2,10 +2,14 @@ pipeline {
   agent any
 
   environment {
-    // Full path so Local System can find it
-    MINIKUBE = 'C:\\Users\\titia\\minikube.exe'
+    // adjust if minikube.exe is elsewhere
+    MINIKUBE          = 'C:\\Users\\titia\\minikube.exe'
+    // your user’s minikube + kubeconfig paths
+    MINIKUBE_HOME     = 'C:\\Users\\titia\\.minikube'
+    KUBECONFIG        = 'C:\\Users\\titia\\.kube\\config'
+    MINIKUBE_PROFILE  = 'minikube'   // change if your profile has a different name
 
-    // Prevent proxy hijacking of kubectl calls
+    // keep kubectl from being proxied to Jenkins
     HTTP_PROXY  = ''
     HTTPS_PROXY = ''
     http_proxy  = ''
@@ -28,10 +32,17 @@ pipeline {
       }
     }
 
+    stage('Verify Minikube (must already be running)') {
+      steps {
+        bat """
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" status || (echo Minikube not running & exit /b 1)
+        """
+      }
+    }
+
     stage('Build image (Docker Desktop)') {
       steps {
         bat """
-        echo === Docker info ===
         docker version
         docker build -t mydjangoapp:latest .
         docker images | find "mydjangoapp"
@@ -42,11 +53,7 @@ pipeline {
     stage('Load image into Minikube') {
       steps {
         bat """
-        echo === Minikube status (cluster must already be running) ===
-        "%MINIKUBE%" status || (echo Minikube not running & exit /b 1)
-
-        echo === Loading image into Minikube ===
-        "%MINIKUBE%" image load mydjangoapp:latest
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" image load mydjangoapp:latest
         """
       }
     }
@@ -54,15 +61,10 @@ pipeline {
     stage('Deploy to Minikube') {
       steps {
         bat """
-        echo === Apply manifests ===
-        "%MINIKUBE%" kubectl -- apply -f deployment.yaml --validate=false
-
-        echo === Wait for rollout (adjust name if different) ===
-        "%MINIKUBE%" kubectl -- rollout status deployment/django-deployment
-
-        echo === Current pods & services ===
-        "%MINIKUBE%" kubectl -- get pods -o wide
-        "%MINIKUBE%" kubectl -- get svc
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" kubectl -- apply -f deployment.yaml --validate=false
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" kubectl -- rollout status deployment/django-deployment
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" kubectl -- get pods -o wide
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" kubectl -- get svc
         """
       }
     }
@@ -70,8 +72,7 @@ pipeline {
     stage('Show Service URL') {
       steps {
         bat """
-        echo === Service URL (adjust service name if needed) ===
-        "%MINIKUBE%" service movie-service --url || echo Update service name if this fails
+        "%MINIKUBE%" -p "%MINIKUBE_PROFILE%" service movie-service --url || echo Update service name if needed
         """
       }
     }
