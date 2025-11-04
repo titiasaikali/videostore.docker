@@ -9,7 +9,7 @@ pipeline {
     stage('Checkout') {
       steps {
         cleanWs()
-        git branch: 'main', url: 'https://github.com/titiasaikali/videostore.git'
+        git branch: 'main', url: 'https://github.com/titiasaikali/videostore.docker.git'
       }
     }
     stage('Build Docker Image') {
@@ -24,3 +24,4 @@ pipeline {
   }
   post { success { echo "Deployed at http://localhost:${PORT}" } }
 }
+
